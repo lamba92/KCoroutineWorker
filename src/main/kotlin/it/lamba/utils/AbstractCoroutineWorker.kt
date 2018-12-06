@@ -1,6 +1,7 @@
 package it.lamba.utils
 
 import kotlinx.coroutines.*
+import mu.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -12,12 +13,15 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private lateinit var currentJob: Job
     val isActive = if (::currentJob.isInitialized) currentJob.isActive else false
+    protected val logger = KotlinLogging.logger(this.javaClass.simpleName)
+
 
     /**
      * Starts the worker.
      * @param await Blocks the current execution until the worker stops.
      */
     fun start(await: Boolean = false) {
+        logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
             preStartExecution()
             while (isActive)
@@ -38,6 +42,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * @param await Blocks the current execution until the worker stops.
      */
     fun stop(await: Boolean = false) = runBlocking {
+        logger.debug { "Stopping..." }
         if (isActive) {
             preCancellationExecution()
             currentJob.cancel()
@@ -53,7 +58,8 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * @param await Blocks the current execution until the worker restart.
      */
     fun reset(await: Boolean = false){
-        if(await)
+        logger.debug { "Resetting..." }
+        if(!await)
             GlobalScope.launch {
                 stop(true)
                 onReset()

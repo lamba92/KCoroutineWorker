@@ -18,7 +18,10 @@ repositories {
 
 dependencies {
     compile("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.0.1")
-    compile("com.github.lamba92", "kdirectorywatcher", "1.1.0")
+//    compile(project(":KDirectoryWatcher"))
+//    compile("com.github.lamba92", "kdirectorywatcher", "1.1.0")
+    compile("io.github.microutils","kotlin-logging", "1.6.22")
+
     compile(kotlin("stdlib-jdk8"))
 }
 
