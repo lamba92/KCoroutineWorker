@@ -2,6 +2,7 @@ package it.lamba.utils
 
 import kotlinx.coroutines.*
 import mu.KotlinLogging
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -12,8 +13,26 @@ import kotlin.coroutines.CoroutineContext
 abstract class AbstractCoroutineWorker(private val context: CoroutineContext = Dispatchers.Default) {
 
     private lateinit var currentJob: Job
+
     val isActive = if (::currentJob.isInitialized) currentJob.isActive else false
+
     protected val logger = KotlinLogging.logger(this.javaClass.simpleName)
+
+    /**
+     * Minimum time between executions of [executeMaintenance].
+     */
+    private var timeBetweenMaintenance = 500L
+
+    private var lastMaintenance: Long = 0
+    private val lapTime: Long
+        get() = System.currentTimeMillis() - lastMaintenance
+
+    /**
+     * Alternative setter method for [timeBetweenMaintenance].
+     */
+    fun setTimeBetweenMaintenance(time: Long, unit: TimeUnit){
+        timeBetweenMaintenance = TimeUnit.MILLISECONDS.convert(time, unit)
+    }
 
 
     /**
@@ -24,13 +43,27 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
         logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
             preStartExecution()
-            while (isActive)
+            lastMaintenance = System.currentTimeMillis()
+            while (isActive) {
                 execute()
+                if (lapTime >= timeBetweenMaintenance) {
+                    logger.debug { "lapTime ($lapTime) >= timeBetweenMaintenance ($timeBetweenMaintenance) | Executing maintenance..." }
+                    executeMaintenance()
+                    lastMaintenance = System.currentTimeMillis()
+                }
+            }
         }
         if (await) {
             runBlocking { currentJob.join() }
         }
     }
+
+    /**
+     * Called during the maintenance of this worker. This method is called
+     * every [timeBetweenMaintenance] seconds. Use [setTimeBetweenMaintenance]
+     * to modify the interval.
+     */
+    open suspend fun executeMaintenance() {}
 
     /**
      * The cyclically called method where the workers job is executes.
