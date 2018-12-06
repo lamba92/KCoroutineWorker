@@ -7,7 +7,7 @@ plugins {
     maven
 }
 
-group = "com.github.lamba92"
+group = "it.lamba"
 version = "1.0"
 
 repositories {

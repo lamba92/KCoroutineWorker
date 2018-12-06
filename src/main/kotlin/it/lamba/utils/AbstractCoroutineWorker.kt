@@ -8,7 +8,7 @@ import kotlin.coroutines.CoroutineContext
  * called during the worker's lifecicle are available for overriding.
  * @param context The coroutine context where to execute the job of the worker
  */
-abstract class AbstractCoroutineWorker(private val context: CoroutineContext) {
+abstract class AbstractCoroutineWorker(private val context: CoroutineContext = Dispatchers.Default) {
 
     private lateinit var currentJob: Job
     val isActive = if (::currentJob.isInitialized) currentJob.isActive else false
