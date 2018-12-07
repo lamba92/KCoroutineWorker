@@ -14,24 +14,43 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private lateinit var currentJob: Job
 
-    val isActive = if (::currentJob.isInitialized) currentJob.isActive else false
+    internal fun isActive() = currentJob.isActive
+
+    val status: WorkerStatus
+        get() = WorkerStatus(isActive())
+
+    data class WorkerStatus(val isActive: Boolean)
 
     protected val logger = KotlinLogging.logger(this.javaClass.simpleName)
+    private var forceNextMaintenance = false
+
+    fun triggerMaintenance() {
+        forceNextMaintenance = true
+    }
 
     /**
      * Minimum time between executions of [executeMaintenance].
      */
-    private var timeBetweenMaintenance = 500L
+    private var timeBetweenMaintenances = 60000L
+    private var timeBetweenExecutions = 1000L
+    var shouldExecutingMaintenance = false
 
     private var lastMaintenance: Long = 0
     private val lapTime: Long
         get() = System.currentTimeMillis() - lastMaintenance
 
     /**
-     * Alternative setter method for [timeBetweenMaintenance].
+     * Setter method for [timeBetweenMaintenances].
      */
-    fun setTimeBetweenMaintenance(time: Long, unit: TimeUnit){
-        timeBetweenMaintenance = TimeUnit.MILLISECONDS.convert(time, unit)
+    fun setTimeBetweenMaintenances(time: Long, unit: TimeUnit) {
+        timeBetweenMaintenances = TimeUnit.MILLISECONDS.convert(time, unit)
+    }
+
+    /**
+     * Setter method for [timeBetweenExecutions].
+     */
+    fun setTimeBetweenExecutions(time: Long, unit: TimeUnit) {
+        timeBetweenExecutions = TimeUnit.MILLISECONDS.convert(time, unit)
     }
 
 
@@ -45,22 +64,41 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
             preStartExecution()
             lastMaintenance = System.currentTimeMillis()
             while (isActive) {
-                execute()
-                if (lapTime >= timeBetweenMaintenance) {
-                    logger.debug { "lapTime ($lapTime) >= timeBetweenMaintenance ($timeBetweenMaintenance) | Executing maintenance..." }
-                    executeMaintenance()
-                    lastMaintenance = System.currentTimeMillis()
+                logger.debug { "Starting execution..." }
+                try {
+                    execute()
+                    checkMaintenance()
+                    delay(timeBetweenExecutions)
+                } catch (e: Throwable) {
+                    logger.error(e) { "Execution interrupted due to exception" }
                 }
             }
+            logger.debug { "Exiting main cycle" }
+            checkMaintenance()
         }
         if (await) {
             runBlocking { currentJob.join() }
         }
     }
 
+    private suspend fun checkMaintenance() {
+        logger.debug { "Checking if maintenance is needed..." }
+        logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecutingMaintenance = $shouldExecutingMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
+        if (forceNextMaintenance || (shouldExecutingMaintenance && lapTime >= timeBetweenMaintenances)) {
+            logger.debug { "Maintenance needed. | Executing maintenance..." }
+            try {
+                executeMaintenance()
+            } catch (e: Throwable) {
+                logger.error(e) { "Maintenance interrupted due to error" }
+            }
+            lastMaintenance = System.currentTimeMillis()
+            forceNextMaintenance = false
+        } else logger.debug { "Maintenance not needed" }
+    }
+
     /**
      * Called during the maintenance of this worker. This method is called
-     * every [timeBetweenMaintenance] seconds. Use [setTimeBetweenMaintenance]
+     * every [timeBetweenMaintenances] seconds. Use [setTimeBetweenMaintenances]
      * to modify the interval.
      */
     open suspend fun executeMaintenance() {}
@@ -72,27 +110,24 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     /**
      * Signals the worker to stop.
-     * @param await Blocks the current execution until the worker stops.
+     * @param wait Blocks the current execution until the worker stops.
      */
-    fun stop(await: Boolean = false) = runBlocking {
-        logger.debug { "Stopping..." }
-        if (isActive) {
+    fun stop(wait: Boolean = false) {
+        if (isActive()) {
             preCancellationExecution()
-            currentJob.cancel()
-            postCancellationExecution()
-            if (await) {
-                runBlocking { currentJob.join() }
-            }
+            logger.debug { "Stopping..." }
+            if (wait) runBlocking { currentJob.cancelAndJoin() }
+            else currentJob.cancel()
         }
     }
 
     /**
      * Resets the worker.
-     * @param await Blocks the current execution until the worker restart.
+     * @param wait Blocks the current execution until the worker restart.
      */
-    fun reset(await: Boolean = false){
+    fun reset(wait: Boolean = false) {
         logger.debug { "Resetting..." }
-        if(!await)
+        if (!wait)
             GlobalScope.launch {
                 stop(true)
                 onReset()
@@ -108,7 +143,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Waits until the worker finishes without interrupting it.
      */
-    fun join(){
+    fun join() {
         if (::currentJob.isInitialized)
             runBlocking { currentJob.join() }
     }
@@ -122,11 +157,6 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Called as soon as the the worker's job is offloaded into a coroutine. It is executed once.
      */
     open fun preStartExecution() {}
-
-    /**
-     * Called after the worker's job received the cancellation signal.
-     */
-    open fun postCancellationExecution() {}
 
     /**
      * Called before the worker's job receives the cancellation signal.
