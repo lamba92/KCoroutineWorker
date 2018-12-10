@@ -14,7 +14,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private lateinit var currentJob: Job
 
-    internal fun isActive() = currentJob.isActive
+    protected fun isActive() = if(::currentJob.isInitialized) currentJob.isActive else false
 
     val status: WorkerStatus
         get() = WorkerStatus(isActive())
@@ -61,7 +61,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     fun start(await: Boolean = false) {
         logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
-            preStartExecution()
+            onStart()
             lastMaintenance = System.currentTimeMillis()
             while (isActive) {
                 logger.debug { "Starting execution..." }
@@ -69,8 +69,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
                     execute()
                     checkMaintenance()
                     delay(timeBetweenExecutions)
-                } catch (e: Throwable) {
-                    logger.error(e) { "Execution interrupted due to exception" }
+                } catch (e: CancellationException) {
                 }
             }
             logger.debug { "Exiting main cycle" }
@@ -114,16 +113,21 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      */
     fun stop(wait: Boolean = false) {
         if (isActive()) {
-            preCancellationExecution()
+            onStop()
             logger.debug { "Stopping..." }
-            if (wait) runBlocking { currentJob.cancelAndJoin() }
-            else currentJob.cancel()
+            currentJob.cancel()
+            onPostStop()
+            if (wait)
+                runBlocking { currentJob.join() }
+
         }
     }
 
+    open fun onPostStop(){}
+
     /**
-     * Resets the worker.
-     * @param wait Blocks the current execution until the worker restart.
+     * Resets the worker callin [onReset].
+     * @param wait Blocks the current execution until the worker restarts.
      */
     fun reset(wait: Boolean = false) {
         logger.debug { "Resetting..." }
@@ -136,6 +140,23 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
         else {
             stop(true)
             onReset()
+            start()
+        }
+    }
+
+    /**
+     * Restart the worker.
+     * @param wait Blocks the current execution until the worker restarts.
+     */
+    fun restart(wait: Boolean = false) {
+        logger.debug { "Resetting..." }
+        if (!wait)
+            GlobalScope.launch {
+                stop(true)
+                start()
+            }
+        else {
+            stop(true)
             start()
         }
     }
@@ -156,10 +177,10 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called as soon as the the worker's job is offloaded into a coroutine. It is executed once.
      */
-    open fun preStartExecution() {}
+    open fun onStart() {}
 
     /**
      * Called before the worker's job receives the cancellation signal.
      */
-    open fun preCancellationExecution() {}
+    open fun onStop() {}
 }
