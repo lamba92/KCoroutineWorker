@@ -6,7 +6,29 @@ Written in Kotlin with ❤️.
 
 ## Usage
 
-Extend `AbstractCoroutineWorker` or `FilesQueueWorker` and implements the methods you need.
+Extend `AbstractCoroutineWorker` and implements the methods you need.
+
+A CoroutineWorker basically is a worker that executes always the method `execute()` and when needed `executeMaintenance()` like so: 
+```
+while (itShouldRun) {
+    execute()
+    if (shouldDoMaintenance)
+        executeMaintenance()
+    delay(customTime)
+}
+``` 
+
+There are few overridable methods that allows to execute some code in between the worker lifecycle:
+ - `onStart()`: Executed before entering the main cycle.
+ - `onCancel()`: Executed as soon as the `stop()` is called on the worker. In this scope the worker has not yet received the cancellation signal.
+ - `onPostCancel()`: Last method executed by the worker when stopped.
+ - `onReset()`: It is executed when `reset()` is called on the Worker just after `onPostCancel()`.
+ 
+The worker is controllable using:
+ - `start(wait: Boolean = false)`: starts the worker, eventually awaiting it to finish it's work.
+ - `stop(wait: Boolean = false)`: stops the worker, eventually awaiting it to finish stopping.
+ - `restart(wait: Boolean = false)`: restart the worker, eventually waiting for it to stop.
+ - `reset(wait: Boolean = false)`: restart the worker executing `onReset()` in between, eventually waiting for it to stop.
 
 ## Installing [![](https://jitpack.io/v/lamba92/KCoroutineWorker.svg)](https://jitpack.io/#lamba92/KCoroutineWorker)
 

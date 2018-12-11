@@ -33,6 +33,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      */
     private var timeBetweenMaintenances = 60000L
     private var timeBetweenExecutions = 1000L
+
     var shouldExecutingMaintenance = false
 
     private var lastMaintenance: Long = 0
@@ -74,6 +75,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
             }
             logger.debug { "Exiting main cycle" }
             checkMaintenance()
+            onPostStop()
         }
         if (await) {
             runBlocking { currentJob.join() }
@@ -100,7 +102,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * every [timeBetweenMaintenances] seconds. Use [setTimeBetweenMaintenances]
      * to modify the interval.
      */
-    open suspend fun executeMaintenance() {}
+    protected open suspend fun executeMaintenance() {}
 
     /**
      * The cyclically called method where the workers job is executes.
@@ -113,17 +115,14 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      */
     fun stop(wait: Boolean = false) {
         if (isActive()) {
-            onStop()
+            onCancel()
             logger.debug { "Stopping..." }
             currentJob.cancel()
-            onPostStop()
             if (wait)
                 runBlocking { currentJob.join() }
 
         }
     }
-
-    open fun onPostStop(){}
 
     /**
      * Resets the worker callin [onReset].
@@ -177,10 +176,12 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called as soon as the the worker's job is offloaded into a coroutine. It is executed once.
      */
-    open fun onStart() {}
+    protected open fun onStart() {}
 
     /**
      * Called before the worker's job receives the cancellation signal.
      */
-    open fun onStop() {}
+    protected open fun onCancel() {}
+
+    protected open fun onPostStop(){}
 }
