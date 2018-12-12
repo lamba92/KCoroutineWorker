@@ -115,7 +115,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      */
     fun stop(wait: Boolean = false) {
         if (isActive()) {
-            onCancel()
+            onStop()
             logger.debug { "Stopping..." }
             currentJob.cancel()
             if (wait)
@@ -181,7 +181,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called before the worker's job receives the cancellation signal.
      */
-    protected open fun onCancel() {}
+    protected open fun onStop() {}
 
     protected open fun onPostStop(){}
 }
