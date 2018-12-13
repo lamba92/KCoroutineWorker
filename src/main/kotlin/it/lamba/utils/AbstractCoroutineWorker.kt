@@ -14,7 +14,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private lateinit var currentJob: Job
 
-    protected fun isActive() = if(::currentJob.isInitialized) currentJob.isActive else false
+    protected fun isActive() = if (::currentJob.isInitialized) currentJob.isActive else false
 
     val status: WorkerStatus
         get() = WorkerStatus(isActive())
@@ -132,12 +132,14 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
         logger.debug { "Resetting..." }
         if (!wait)
             GlobalScope.launch {
-                stop(true)
+                if (isActive)
+                    stop(true)
                 onReset()
                 start()
             }
         else {
-            stop(true)
+            if (isActive())
+                stop(true)
             onReset()
             start()
         }
@@ -183,5 +185,5 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      */
     protected open fun onStop() {}
 
-    protected open fun onPostStop(){}
+    protected open fun onPostStop() {}
 }

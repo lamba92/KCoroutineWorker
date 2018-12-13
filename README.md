@@ -20,8 +20,8 @@ while (itShouldRun) {
 
 There are few overridable methods that allows to execute some code in between the worker lifecycle:
  - `onStart()`: Executed before entering the main cycle.
- - `onCancel()`: Executed as soon as the `stop()` is called on the worker. In this scope the worker has not yet received the cancellation signal.
- - `onPostCancel()`: Last method executed by the worker when stopped.
+ - `onStop()`: Executed as soon as the `stop()` is called on the worker. In this scope the worker has not yet received the cancellation signal.
+ - `onPostStop()`: Last method executed by the worker when stopped.
  - `onReset()`: It is executed when `reset()` is called on the Worker just after `onPostCancel()`.
  
 The worker is controllable using:
