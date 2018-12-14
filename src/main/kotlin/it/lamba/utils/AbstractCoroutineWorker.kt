@@ -34,7 +34,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     private var timeBetweenMaintenances = 60000L
     private var timeBetweenExecutions = 1000L
 
-    var shouldExecutingMaintenance = false
+    var shouldExecuteMaintenance = false
 
     private var lastMaintenance: Long = 0
     private val lapTime: Long
@@ -84,8 +84,8 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private suspend fun checkMaintenance() {
         logger.debug { "Checking if maintenance is needed..." }
-        logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecutingMaintenance = $shouldExecutingMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
-        if (forceNextMaintenance || (shouldExecutingMaintenance && lapTime >= timeBetweenMaintenances)) {
+        logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecuteMaintenance = $shouldExecuteMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
+        if (forceNextMaintenance || (shouldExecuteMaintenance && lapTime >= timeBetweenMaintenances)) {
             logger.debug { "Maintenance needed. | Executing maintenance..." }
             try {
                 executeMaintenance()
