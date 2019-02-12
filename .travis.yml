@@ -6,7 +6,7 @@ matrix:
       before_install: set -e && choco install jdk8 -params 'installdir=c:\\portapps_opt\\jdk' -y
     - os: linux
       before_install:
-      - then sudo apt-get install openjdk-8-jdk -y
+      - sudo apt-get install openjdk-8-jdk -y
       - chmod +x gradlew
     - os: osx
       before_install:
