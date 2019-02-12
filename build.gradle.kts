@@ -19,7 +19,7 @@ version = "2.0.0"
 repositories {
     mavenCentral()
     jcenter()
-    maven(url="https://jitpack.io")
+    maven(url = "https://jitpack.io")
 }
 
 kotlin {
@@ -34,8 +34,8 @@ kotlin {
     macosX64()
     linuxX64()
 
-    configure(nativeTargets){
-        compilations("main"){
+    configure(nativeTargets) {
+        compilations("main") {
             defaultSourceSet.dependsOn(sourceSets["nativeCommon"])
             dependencies {
                 implementation(kotlinx("coroutines-core-native", "1.1.1"))
@@ -57,7 +57,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation(kotlinx("coroutines-core-common","1.1.1"))
+                implementation(kotlinx("coroutines-core-common", "1.1.1"))
             }
         }
         val commonTest by getting {
@@ -69,7 +69,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
-                implementation(kotlinx("coroutines-core","1.1.1"))
+                implementation(kotlinx("coroutines-core", "1.1.1"))
             }
         }
         val jvmTest by getting {
@@ -81,13 +81,32 @@ kotlin {
     }
 }
 
-val keyId = System.getenv()["SIGNING_KEYID"]
-val gpgPassword = System.getenv()["SIGNING_PASSWORD"]
-val gpgFile = System.getenv()["SIGNING_SECRETRINGFILE"]
-val sonatypeUsername = System.getenv()["SONATYPEUSERNAME"]
-val sonatypePassword = System.getenv()["SONATYPEPASSWORD"]
+val localProp = properties("local.properties")
 
-if(listOf(keyId, gpgPassword, gpgFile, sonatypeUsername, sonatypePassword).none { it == null }){
+val keyId = System.getenv()["SIGNING_KEYID"]
+    ?: localProp["signing.keyId"] as String?
+    ?: extra["signing.keyId"] as String?
+val gpgPassword = System.getenv()["SIGNING_PASSWORD"]
+    ?: localProp["signing.password"] as String?
+    ?: extra["signing.password"] as String?
+val gpgFile = System.getenv()["SIGNING_SECRETRINGFILE"]
+    ?: localProp["signing.secretKeyRingFile"] as String?
+    ?: extra["signing.secretKeyRingFile"] as String?
+val sonatypeUsername = System.getenv()["SONATYPEUSERNAME"]
+    ?: localProp["sonatypeUsername"] as String?
+    ?: extra["sonatypeUsername"] as String?
+val sonatypePassword = System.getenv()["SONATYPEPASSWORD"]
+    ?: localProp["sonatypePassword"] as String?
+    ?: extra["sonatypePassword"] as String?
+
+if (listOf(
+        keyId,
+        gpgPassword,
+        gpgFile,
+        sonatypeUsername,
+        sonatypePassword
+    ).none { it == null } && file(gpgFile!!).exists()
+) {
 
     println("Publishing setup detected. Setting up publishing...")
 
@@ -121,7 +140,16 @@ if(listOf(keyId, gpgPassword, gpgFile, sonatypeUsername, sonatypePassword).none 
                 }
         }
     }
-}
+} else println(buildString {
+    appendln("Not enough information to publish:")
+    appendln("keyId: ${if (keyId == null) "NOT " else ""}found")
+    appendln("gpgPassword: ${if (gpgPassword == null) "NOT " else ""}found")
+    appendln("gpgFile: ${gpgFile ?: "NOT found"}")
+    appendln("gpgFile presence: ${gpgFile?.let { file(it).exists() } ?: "false"}")
+    appendln("sonatypeUsername: ${if (sonatypeUsername == null) "NOT " else ""}found")
+    appendln("sonatypePassword: ${if (sonatypePassword == null) "NOT " else ""}found")
+})
+
 
 val KotlinMultiplatformExtension.nativeTargets
     get() = targets.filter { it is KotlinNativeTarget }.map { it as KotlinNativeTarget }
@@ -171,7 +199,7 @@ fun Node.node(key: String, content: Node.() -> Unit) = appendNode(key).also(cont
 
 fun org.gradle.api.publish.maven.MavenPom.buildAsNode(builder: Node.() -> Unit) = withXml { asNode().apply(builder) }
 
-fun properties(file: File) = Properties().apply { load(file.inputStream()) }
+fun properties(file: File) = Properties().apply { load(file.apply { if (!exists()) createNewFile() }.inputStream()) }
 fun properties(fileSrc: String) = properties(file(fileSrc))
 
 fun customizeForMavenCentral(pom: org.gradle.api.publish.maven.MavenPom) = pom.buildAsNode {
