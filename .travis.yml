@@ -1,18 +1,20 @@
-language: java
-
-os:
-  - windows
-  - linux
-  - osx
-
-jdk:
-  - oraclejdk8
+matrix:
+  include:
+    - os: windows
+      before_install: set -e && choco install jdk8 -params 'installdir=c:\\portapps_opt\\jdk' -y
+    - os: linux
+      before_install:
+      - then sudo apt-get install openjdk-8-jdk -y
+      - chmod +x gradlew
+    - os: osx
+      before_install:
+      - brew tap caskroom/versions && brew cask install java8
+      - chmod +x gradlew
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
     -in secret.gpg.enc -out secret.gpg
     -d
-  - chmod +x gradlew
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -25,8 +27,9 @@ cache:
 
 after_success:
   if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
-      [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    ./gradlew publish
+  [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then .\gradlew publish;
+    else ./gradlew publish
   else
-    echo "This will not deploy!"
+  echo "This will not deploy!"
   fi
