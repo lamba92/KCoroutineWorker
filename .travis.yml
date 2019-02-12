@@ -5,19 +5,19 @@ matrix:
     before_install:
     - choco install jdk11
     - choco install openssl.light
-    script: ".\\gradlew check"
+    script: .\\gradlew check
   - os: linux
     language: java
     jdk: openjdk11
     before_install:
     - chmod +x gradlew
-    script: "./gradlew check"
+    script: ./gradlew check
   - os: osx
     language: java
     jdk: openjdk11
     before_install:
     - chmod +x gradlew
-    script: "./gradlew check"
+    script: ./gradlew check
   allow_failures:
     - os: windows
 
@@ -28,11 +28,8 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-after_success: if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    echo "This will deploy!" && if [[ "$TRAVIS_OS_NAME"== "windows" ]]; then
-        .\gradlew publish
-      else ./gradlew publish fi
-    else echo "This will not deploy!"
+after_success: if [ "$TRAVIS_BRANCH" == "master" ] && [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    echo "Deploying..." && ./gradlew publish
   fi
 env:
   global:
