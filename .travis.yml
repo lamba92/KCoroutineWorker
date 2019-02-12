@@ -5,22 +5,21 @@ matrix:
     before_install:
     - choco install jdk11
     - choco install openssl.light
-    script: .\\gradlew check
+    script: ".\\\\gradlew check"
   - os: linux
     language: java
     jdk: openjdk11
     before_install:
     - chmod +x gradlew
-    script: ./gradlew check
+    script: "./gradlew check"
   - os: osx
     language: java
     jdk: openjdk11
     before_install:
     - chmod +x gradlew
-    script: ./gradlew check
+    script: "./gradlew check"
   allow_failures:
-    - os: windows
-
+  - os: windows
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -29,19 +28,17 @@ cache:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
 after_success:
-  - |
-    if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      echo "Deploying..." && ./gradlew publish
-    fi
+- |
+  if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    echo "Deploying..." && ./gradlew publish
+  fi
 env:
   global:
-  - secure: CG72eftnvYMCpuVM86hKZtPIQroeYCuwIQL9ReDQBy0yS7gTCrltXIphUxwWRTGBKbxSOMyOEhuV0RFwGfLr4pfwnL0ePgsy25rAgeaPI4Ep1Wi2dLreRUBTx0WUtnEU+CX0DCHnGg+enV35Civo9tLpOwiNLI6NzOV78ZPYzEpd0i7XllBQj6M9fyRlV/0r5H2h29HwG/284BO9pW+y7KxmRSZZe1qMEL1c/BuWLGzy5803JaPI7P6Qf73akA/zYGHhOavZhFby/sdytZV+XXS7HcvzbuA383ZvRSzVD/fc5sH4kkyOPHc9i77CeY8cyf05kvGeHND8Dh6+ZCdKzy8+I7vsScN5v+QOc6cAo3pufqztiqUH6fXYYw7iQyaF4OTWcJP0V5GJaGPY4JxOMPPlmr5+JP8oshhPAHrYgmwW6tPDU+No5t3Pdq0Mjf9y61ws5SybRUzzJ/EgcibbijBwEioFpDGIJSmA3PsmtSOp37y9VSEzlEswQHAnqZh4XVoeVgx73OIDJ2ygHSN5qyhPxW3AAKKiplf2DY31qZNAWcVOzvUc2xvGlgxXNjtLR9kshhOkUuHTV7JmhxbgQz4Brj7hUBs2d192olQEpPMP3SDjL5EQLeqWL81KzPxVMsCMrfvZZ0jpnQYwmpWUZ6gAfJhDuVjChbSgPrrd4Sc=
-  - secure: xaqJX8iDoQcUnNu5md/sBY2eo9rwq+OGrEAQBR828Ta+LBqWbV3dCeyyaE1+jnqNpQF7M2TL5XE+Pk6oRkBvlok+niv289PAJkNe3pitB/Iss4Zi/z1To6VE4xffL/bvZ45+S6oFMI+ME4QJv8GmtwlxFtAmEc3LpFu2nBsfdR39Eu7YwYNOgyGLVzu/sqYKHEMyt4Yn1NwBy4aUMnscc55L7rszFB2yMy/lEc3OgSNwuieexK+JCLyFxZqdW8qlaZNZwCa+UE9ZLW92s2mQcQk75FDR4MF/Y+ZZwQ2yjHCDOArBE1jsUMxZiECxmoPbSsvIgccLTDazp4aP0I6O6X2eEo+BsuONsb+TCGNE8kXb1UaG8D/sSAa3I6J0wOsOHWQ7fYBgbkN6zwGee5YkhtZKWPZgTS9GxIRsb5ihI/suvCqew7MjlZI0HFCZqjsgqyn2fHQnVYQiNAvd/tZzK7XSTsgsOmlTqCkzkffD02qC/7oznsjwxwwa/2L6FEJYGmo9GJRx3LTsSlZKT57LLB4/bzTGhKrfBRHti5H+0BmsiHFkcUJvDBRug3D5wqSKpsFfUlK6xFmCntmMhvY7/8vrfwTZEE0BmZBEPJPXrzi9ZV4gZxD5azVqPYpRYkLBgH7Nc1GiIT6CpkyorT3IjaAnRQr+3vgV2q25sPQU6hA=
-  - secure: GBcMwMgYnbfYEbAJHtF7BmdjCYG8XXkpfDXX9JhXKySy4YIOpX/+bd16NZxjTfPabMPLKtzbi5r+EQwAD9Cv3HEwwMe3DViJlSdikXSUN3mIFSL85NEKJ3yVj1LSmdqjPy/LVg6Diux0CMD1oK97A99Lu4zSo1ZJPc/m8iEDPkMVsE/ZBD64tYplS8FI55q9UNbjO5HtEWGzVo6Cd2GPFcYkkN9AFMLbiiPXRqEhXGokCsN5SQksLc0oRZKWGvfXEexjv5398y8PVjeFcofhMmgBN0vqqhSuoC6tAgBbSzIAKyoPqB+cV7iBVZLrW56qspsWokxVN5ZYXG7Xdo+FdLthdhu9O80ijlR4dDPPftXdIiZkIiOC+qcGCL9ZItmHAa935KWeADsvzitJjT11rYF4trY5WJJgRb8L2efMiIVN936T0ZKNFRHZfgiWwM0iID3aloMtcEvbTCpGScXV8R/ih7ZiVU0z0beg7BKuaqQZXahsSXeCwKqKVkO8YND7QlW2jTapSE1qvAxRTJLGmcrB0iShpkhnzZmo3w9A8oUmPqrtPBugH0HsDzpPEvBWnOITKgJgI54apm2nz3+EveTiY+rLyVdpiQ4u9YXBPVNGdmjL8a1iq/2xzDZM6bwIEm5sRemhLHOj3Kl9K+yWjFBF6JNBIKqHNqE79/khmPY=
-  - secure: XPGCwwaF20sQ5fs/HHcisyuNiowwyHr/2V1VTIIfWkZzP10yuuwaUZg2m8e7nkwmHj0hiPmvok1LdHjnvgCS9246ny+eHjwlSy2XeM0HUIalYv8bL2/KxyKielZIWfc0n+62LHjFoXmBRxTowk8teuEDSSsdvhuv87AbErwJuI6jGGaj151gz6tXHEyNFrNu42kYQYlMmCpPiR7fP6WwfrCoJ03QGIkgyV7It4I/CD146MoZaeUroF1HSmEul05EHf4dTv5tM/8KJ/pV/nM5LjUQIMVfpljQ65yNuVwal7j+m37QtWTDckofgUcWDaxdSt/43FShzLgPCHWaEaDaAPQVjQQwzW76kiiG137X8wUcZMZLThQLzYf+GgPi/vOMNcwUp/sjJ+vyNVMVW+bMcy83XiGdvOxBtlyGA8JEKEMW8enW0b/8qKqfdlRBkPJZpj3X1yRypNLahRAOhrIjHTiPTG2cSeuuMSwikNR3n41nYgggQuUc85pKVbL5gNQZYC+L8NpXwhyWdgMj8yoWHie0smdR/mG92VH9EABYXph4yapy2sPjkHqkUsYm3g+MDEhOcCYrrW3/ziv25NPlogF6iwrQnVrNom5B+F0U8PI/zlAkhxafp8UlDXTRAZ1UQ6JV68fuFIJXiCLjzpfiK34CQlbRD8sgyzk9tUyZ690=
-  - secure: Vp/2Xqswz2AZltCAA2fhf6+b4ZQi/PGadAwDrm96gaMPu8WyYkFQUKF94PAJmFCbpr7R/0YxVtDJaMECMaCNp60FfrGzeuXsSPxMV+3I4aocnJpDEOKis93gNnn4pdL6ZJyu29PIYTOF84fXNU99pu5Wj5OrOwR3PT27Iqw1tAHETyTFSqeiehMlXm5mq8pIjtNZkYhqLfGfVNNTFc14qRa1Udf4eDPzvt3lswT1PxGqAgCuqIUK3uooGhF5ioMAeqvakRzFTqv9JYG8GRPzT0UZVfwr2K+YoaQ31iZ+GiZ0Rd0W7BYm+XYLzWSloFf97eitIFJpEnMtm/ZxjOZrpZIu9bImCFMtZN1OFkuajmrW6FIh7WjIl6LRG5LKzjMv0DB+qjtEzTojrjMFLrPnUZTUa0lFynkMuNGMt4PpCOs0paG7REoduEUxOVuMUFLUQe0lKPzTnGOs7eXHlJB6d+zzuZjUjPJU05o+GgXBWqxiEwiUISoUV+VATEmBJDopMt2pRtaCGagKmd66JWZ0LUiNwwt9WMKo25YsGLELxuuLfPtOeePhuZN+36k5ydc5wTAeoC+8iQBcnOtpHy0ApEUDqdLrhDJPZbjtx+nvEw+ZUJ9jkyf9cY4XVywphnDVAquhJhnrEj2aessXKkqJ8TOt0yTfXZ1tVI64Qsw/3ts=
-
+  - SIGNING_SECRETRINGFILE=./secret.gpg
+  - secure: G2UA6NY3lWFdqitcY7hgHlfdZ3r0jzijkt89/pbJ2eBnCR5vaWbgfdMZHFkHIkYJpKUgqYq0E2ItoOvJWMHboS+74fDS1HjElJ7/+u772C1WcN1Ft39aCtahxA1l89Zzyij5T+x79/zyvykAxN9TZR4DyoQrQO30Q/2vLYSIpwWvpCpAk7ASvKFC+BfsdEQArMeMpqEceE3t1qF8Ya9zINSsK0pvGyrLMAHKYdn4lHtJUa3TR31lDQ8WK7e+P/ZWFNtMBdbdmiOICXPT1hlJp0+J1aCVgB2kcd6WoffumaHmGUjNDZoHlOzhlqUrWBs1uvwbnKDFcNckI2gsBpSQpL36/6OiqjslYCEkmoVhDvljG/YljOTWsOLxkeeWdNYUrTUGYMkGxsngWjKDlK+HDJ9As8xCbAnHF0jNf+eK8WXR+iqX1gfNa4cm6zsWaL83cwhvCNXqhdh+CD3uBC8xNffBwIwkLtuRLvxXFZ+3HJ460L8Cr5pOuKWGkAWxO7zMFnFx3isV0k8B3UU5Arkd5Ln6ttgAw3UefiIyF5FOMjHIKtPnUjSMx5PhFANc0y7hCzp2AaWbLWVa8/dDdhzW1fgo64UzxB/6uneshVYNmS+ooW2dEZCg0OE1NZ31yorCN+M3jEeXM9KulMPxCW7Y+/MFYs/TCwV39Pn3dM0xm18=
+  - secure: QwC1V8y7zLSYaGIRaoPK5tDTV4KglMPZipaC1ZkkjaHmZPzBIP3ip+ktEKpq6fZxjl0cnWtYs5BFsbXCs4/B2lHRcIqCJ/Ug0InoTjkJ3qJMWtg79Ma2tiLIRo1x0U2OYVAhb+rvpqZ/7UCCVQvbUijR7qbhWp0PC84cjIx1zyrNad8c3t62foQdQntMEoC6UTmjSQZqNvxwdPKHc9LqH4mt42bzuefrbLtmV9EKWjwAGkr+Hc3Pdp5SvLojEpX2ERLhgm7xf297MYUQBSpz8CkdQ+iT0o363/CPcvbA5dK4QYormSwAEmUbcRkNf7lwFBgTiUiG4ItXSRxbQgeo/U5wWo83PuOmRqvef2LpHjMukm1kPRAXhx3VG5axWZNHg0e9WD8rYzeNlcCVN9bfEn2k5UC1rY4OsmDoK7GsIp7ejS7YTcxao7n4YXz4kuqZ7siY0sS9nCQwcdwC35y7HbS2YCoIcsf31lZE+1vZIswwA1j6jnh2ODCl0Bu9UsxvTEmJrWUaY4AWw3BkWn6S8Jb3Ae7mazl9p5hP4e3X2YjE2Y61wiXG2Mhq9XedfpnAxr+tqtgmrROyhBbN1TOU6nYbRth1LpOjRE5q1b83ugd0J3+mIkaEiUWYhlZpTN0UbWumX3kUTGuVFgwWH3cIgmVokC9uY22Xi+t6cAoOwQA=
+  - secure: bTh3yTv45VI28CKW4OTcw3YMCYIjDxbrDX3fFy/51yrcVx1tYk5ljKFiXIV045Zbef8fF5Mw1pxD3PbOfXpPnwooOb1fl0nNJLlgc9eU32V3/WU5kgyOAcp84ahdKkdgWOHjDamaC3VxuMszRbNXA2bhHrqcsDXuk2ZFYEW23XshcfTnIq+J4KVkDSaEYGVrqcqW8isxibbO+OgjNkrYn9CHe0Foeufrh8ncxcTsz4xlN8s8vDc+Wu3W4NTIUHPdS6Cu83eb17pc8A4znRiW+RDq+PJjn9dGE3gJZASBl9FY/Yjuh4/mkgRF78G5jIykBVS2qa3q9Hnh689JfM2oHNyvIdTvBBlJF7gAtEutgOWDS39J2XfwpBfFJvIDpSMaNwrve+UF/RYnzZ50Z5V/qTDbw+BckW3hCBj5ThK6o8eeSS6dyS2Icyvl22jsmPT6v5wknisZVTRJoJbNSKdjV6Zh1Zl/+uhmFHQooUqWGig20dyFNzKbxgHgo11MM/0IQIgJRT6yhqBcVNP5yFYejbgMaXIe/o8VevlvMQJRhYtT9d9WC+VGKomGEEthZ6Ijtj1Tfgo9gp2y1/+UXuUQp5ef7sg5OMaP8SCbVyvHK1EJm2PCWOoQuWsw8o6D45lOVESF8Qygv4c/zu7i3gvl3jQIH7xosy80boZCXCKB5gE=
+  - secure: d30sdV9gWxo/JkdfNXt28HGblb9oT7QCnRkPVU7Jc8PnwwUdv70FLh7mNCfcoXjMzQ/LoQo3Ywd7TWwwOzqBt74up6iQbu8DrTX751kxzdNPNvhEgpqfI8TGvte2AxBQsZz/k9w5Ep8L/OBhH1fmYKmCfaLl5BPjMHUkHg/s5dBGcPZMEE5ErdEyLm6P8m83CFFURHiUzAWKtmz97N+7k7TxfLD9kxJGTnuqnr4n5UyjRgJhW7HNpmurNFrIKB3/tOddmzfL46GvQRRPBFBe2zw72nywVf9Zl1Gh3qYxXPuY3e4VFSxcs3HGGHj0JhkuSrbf66+QuGaMrXvRoVas5n6hmEG9paAXYwM01qlixFofmhKGreTjePKyuJ4ZR2dgpQTDNZ9lzblO1BXzC7SZnVQngVpq9batfeerkK2Rt8jRlTg9BHiKjEej++RgYgpRT4CpKS/RAilB5jg6tFrpVz7i8wbZ4q2ZVAicYm8lph16XkZHBIdtCSjhGFMRb0FCJEtEe5LRF8njiAcVIKEOd1sblFJbN/lpWVzKQYitdBvuFSIMWhWvRToqKxg/LHM/ikSQeiJNqPMBP3YYz71zYG6qD3fdzwAO/sxtW9aj2Hm9QqPoQLLzqiCgmErxWal3EUXoTB2SZi12zJxc01X8CwulB/e9Gibhwn3aMlYoZQQ=
 before_install:
 - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-  -in secret.gpg.enc -out   secret.gpg
-  -d
+  -in secret.gpg.enc -out ./secret.gpg -d
