@@ -28,7 +28,9 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-after_success: if [ "$TRAVIS_BRANCH" == "master" ] && [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo "Deploying..." && ./gradlew publish fi
+after_success: if [ "$TRAVIS_BRANCH" == "master" ] && [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    echo "Deploying..." && ./gradlew publish
+  fi
 env:
   global:
   - secure: CG72eftnvYMCpuVM86hKZtPIQroeYCuwIQL9ReDQBy0yS7gTCrltXIphUxwWRTGBKbxSOMyOEhuV0RFwGfLr4pfwnL0ePgsy25rAgeaPI4Ep1Wi2dLreRUBTx0WUtnEU+CX0DCHnGg+enV35Civo9tLpOwiNLI6NzOV78ZPYzEpd0i7XllBQj6M9fyRlV/0r5H2h29HwG/284BO9pW+y7KxmRSZZe1qMEL1c/BuWLGzy5803JaPI7P6Qf73akA/zYGHhOavZhFby/sdytZV+XXS7HcvzbuA383ZvRSzVD/fc5sH4kkyOPHc9i77CeY8cyf05kvGeHND8Dh6+ZCdKzy8+I7vsScN5v+QOc6cAo3pufqztiqUH6fXYYw7iQyaF4OTWcJP0V5GJaGPY4JxOMPPlmr5+JP8oshhPAHrYgmwW6tPDU+No5t3Pdq0Mjf9y61ws5SybRUzzJ/EgcibbijBwEioFpDGIJSmA3PsmtSOp37y9VSEzlEswQHAnqZh4XVoeVgx73OIDJ2ygHSN5qyhPxW3AAKKiplf2DY31qZNAWcVOzvUc2xvGlgxXNjtLR9kshhOkUuHTV7JmhxbgQz4Brj7hUBs2d192olQEpPMP3SDjL5EQLeqWL81KzPxVMsCMrfvZZ0jpnQYwmpWUZ6gAfJhDuVjChbSgPrrd4Sc=
