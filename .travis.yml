@@ -8,13 +8,13 @@ matrix:
     script: ".\\gradlew check"
   - os: linux
     language: java
-    jdk: openjdk9
+    jdk: oraclejdk9
     before_install:
     - chmod +x gradlew
     script: "./gradlew check"
   - os: osx
     language: java
-    jdk: openjdk9
+    jdk: oraclejdk9
     before_install:
     - chmod +x gradlew
     script: "./gradlew check"
