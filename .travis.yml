@@ -3,19 +3,19 @@ matrix:
   - os: windows
     language: c
     before_install:
-    - choco install jdk8
+    - choco install jdk9
     - choco install openssl.light
     script: ".\\gradlew check"
   - os: linux
     language: java
-    jdk: openjdk8
+    jdk: openjdk9
     before_install:
     - chmod +x gradlew
     script: "./gradlew check"
   - os: osx
-    language: generic
+    language: java
+    jdk: openjdk9
     before_install:
-    - brew tap AdoptOpenJDK/openjdk && brew cask install adoptopenjdk8
     - chmod +x gradlew
     script: "./gradlew check"
   allow_failures:
