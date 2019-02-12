@@ -1,12 +1,11 @@
 matrix:
-  allow_failures:
+  include:
   - os: windows
     language: c
     before_install:
     - choco install jdk8
     - choco install openssl.light
     script: ".\\gradlew check"
-  include:
   - os: linux
     language: generic
     before_install:
@@ -19,6 +18,9 @@ matrix:
     - brew tap caskroom/versions && brew cask install java8
     - chmod +x gradlew
     script: "./gradlew check"
+  allow_failures:
+    - os: windows
+
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
