@@ -1,42 +1,41 @@
 matrix:
   include:
-    - os: windows
-      language: c # workaround until travis supports generic language builds
-      before_install:
-      - choco install jdk8
-      - choco install openssl.light
-      script: .\gradlew check
-    - os: linux
-      language: generic
-      before_install:
-      - sudo apt-get install openjdk-8-jdk -y
-      - chmod +x gradlew
-      script: ./gradlew check
-    - os: osx
-      language: generic
-      before_install:
-      - brew tap caskroom/versions && brew cask install java8
-      - chmod +x gradlew
-      script: ./gradlew check
-
+  - os: windows
+    language: c
+    before_install:
+    - choco install jdk8
+    - choco install openssl.light
+    script: ".\\gradlew check"
+  - os: linux
+    language: generic
+    before_install:
+    - sudo apt-get install openjdk-8-jdk -y
+    - chmod +x gradlew
+    script: "./gradlew check"
+  - os: osx
+    language: generic
+    before_install:
+    - brew tap caskroom/versions && brew cask install java8
+    - chmod +x gradlew
+    script: "./gradlew check"
 before_script:
-  - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-    -in secret.gpg.enc -out secret.gpg
-    -d
-
+- openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
+  -in secret.gpg.enc -out secret.gpg -d
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - "$HOME/.gradle/caches/"
-    - "$HOME/.gradle/wrapper/"
-
-after_success:
-  if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then .\gradlew publish
-    else ./gradlew publish
-  else
-  echo "This will not deploy!"
-  fi
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+after_success: if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
+  [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo "This will deploy!" if [[ "$TRAVIS_OS_NAME"
+  == "windows" ]]; then .\gradlew publish else ./gradlew publish else echo "This will
+  not deploy!" fi
+env:
+  global:
+  - secure: CG72eftnvYMCpuVM86hKZtPIQroeYCuwIQL9ReDQBy0yS7gTCrltXIphUxwWRTGBKbxSOMyOEhuV0RFwGfLr4pfwnL0ePgsy25rAgeaPI4Ep1Wi2dLreRUBTx0WUtnEU+CX0DCHnGg+enV35Civo9tLpOwiNLI6NzOV78ZPYzEpd0i7XllBQj6M9fyRlV/0r5H2h29HwG/284BO9pW+y7KxmRSZZe1qMEL1c/BuWLGzy5803JaPI7P6Qf73akA/zYGHhOavZhFby/sdytZV+XXS7HcvzbuA383ZvRSzVD/fc5sH4kkyOPHc9i77CeY8cyf05kvGeHND8Dh6+ZCdKzy8+I7vsScN5v+QOc6cAo3pufqztiqUH6fXYYw7iQyaF4OTWcJP0V5GJaGPY4JxOMPPlmr5+JP8oshhPAHrYgmwW6tPDU+No5t3Pdq0Mjf9y61ws5SybRUzzJ/EgcibbijBwEioFpDGIJSmA3PsmtSOp37y9VSEzlEswQHAnqZh4XVoeVgx73OIDJ2ygHSN5qyhPxW3AAKKiplf2DY31qZNAWcVOzvUc2xvGlgxXNjtLR9kshhOkUuHTV7JmhxbgQz4Brj7hUBs2d192olQEpPMP3SDjL5EQLeqWL81KzPxVMsCMrfvZZ0jpnQYwmpWUZ6gAfJhDuVjChbSgPrrd4Sc=
+  - secure: xaqJX8iDoQcUnNu5md/sBY2eo9rwq+OGrEAQBR828Ta+LBqWbV3dCeyyaE1+jnqNpQF7M2TL5XE+Pk6oRkBvlok+niv289PAJkNe3pitB/Iss4Zi/z1To6VE4xffL/bvZ45+S6oFMI+ME4QJv8GmtwlxFtAmEc3LpFu2nBsfdR39Eu7YwYNOgyGLVzu/sqYKHEMyt4Yn1NwBy4aUMnscc55L7rszFB2yMy/lEc3OgSNwuieexK+JCLyFxZqdW8qlaZNZwCa+UE9ZLW92s2mQcQk75FDR4MF/Y+ZZwQ2yjHCDOArBE1jsUMxZiECxmoPbSsvIgccLTDazp4aP0I6O6X2eEo+BsuONsb+TCGNE8kXb1UaG8D/sSAa3I6J0wOsOHWQ7fYBgbkN6zwGee5YkhtZKWPZgTS9GxIRsb5ihI/suvCqew7MjlZI0HFCZqjsgqyn2fHQnVYQiNAvd/tZzK7XSTsgsOmlTqCkzkffD02qC/7oznsjwxwwa/2L6FEJYGmo9GJRx3LTsSlZKT57LLB4/bzTGhKrfBRHti5H+0BmsiHFkcUJvDBRug3D5wqSKpsFfUlK6xFmCntmMhvY7/8vrfwTZEE0BmZBEPJPXrzi9ZV4gZxD5azVqPYpRYkLBgH7Nc1GiIT6CpkyorT3IjaAnRQr+3vgV2q25sPQU6hA=
+  - secure: GBcMwMgYnbfYEbAJHtF7BmdjCYG8XXkpfDXX9JhXKySy4YIOpX/+bd16NZxjTfPabMPLKtzbi5r+EQwAD9Cv3HEwwMe3DViJlSdikXSUN3mIFSL85NEKJ3yVj1LSmdqjPy/LVg6Diux0CMD1oK97A99Lu4zSo1ZJPc/m8iEDPkMVsE/ZBD64tYplS8FI55q9UNbjO5HtEWGzVo6Cd2GPFcYkkN9AFMLbiiPXRqEhXGokCsN5SQksLc0oRZKWGvfXEexjv5398y8PVjeFcofhMmgBN0vqqhSuoC6tAgBbSzIAKyoPqB+cV7iBVZLrW56qspsWokxVN5ZYXG7Xdo+FdLthdhu9O80ijlR4dDPPftXdIiZkIiOC+qcGCL9ZItmHAa935KWeADsvzitJjT11rYF4trY5WJJgRb8L2efMiIVN936T0ZKNFRHZfgiWwM0iID3aloMtcEvbTCpGScXV8R/ih7ZiVU0z0beg7BKuaqQZXahsSXeCwKqKVkO8YND7QlW2jTapSE1qvAxRTJLGmcrB0iShpkhnzZmo3w9A8oUmPqrtPBugH0HsDzpPEvBWnOITKgJgI54apm2nz3+EveTiY+rLyVdpiQ4u9YXBPVNGdmjL8a1iq/2xzDZM6bwIEm5sRemhLHOj3Kl9K+yWjFBF6JNBIKqHNqE79/khmPY=
+  - secure: XPGCwwaF20sQ5fs/HHcisyuNiowwyHr/2V1VTIIfWkZzP10yuuwaUZg2m8e7nkwmHj0hiPmvok1LdHjnvgCS9246ny+eHjwlSy2XeM0HUIalYv8bL2/KxyKielZIWfc0n+62LHjFoXmBRxTowk8teuEDSSsdvhuv87AbErwJuI6jGGaj151gz6tXHEyNFrNu42kYQYlMmCpPiR7fP6WwfrCoJ03QGIkgyV7It4I/CD146MoZaeUroF1HSmEul05EHf4dTv5tM/8KJ/pV/nM5LjUQIMVfpljQ65yNuVwal7j+m37QtWTDckofgUcWDaxdSt/43FShzLgPCHWaEaDaAPQVjQQwzW76kiiG137X8wUcZMZLThQLzYf+GgPi/vOMNcwUp/sjJ+vyNVMVW+bMcy83XiGdvOxBtlyGA8JEKEMW8enW0b/8qKqfdlRBkPJZpj3X1yRypNLahRAOhrIjHTiPTG2cSeuuMSwikNR3n41nYgggQuUc85pKVbL5gNQZYC+L8NpXwhyWdgMj8yoWHie0smdR/mG92VH9EABYXph4yapy2sPjkHqkUsYm3g+MDEhOcCYrrW3/ziv25NPlogF6iwrQnVrNom5B+F0U8PI/zlAkhxafp8UlDXTRAZ1UQ6JV68fuFIJXiCLjzpfiK34CQlbRD8sgyzk9tUyZ690=
+  - secure: Vp/2Xqswz2AZltCAA2fhf6+b4ZQi/PGadAwDrm96gaMPu8WyYkFQUKF94PAJmFCbpr7R/0YxVtDJaMECMaCNp60FfrGzeuXsSPxMV+3I4aocnJpDEOKis93gNnn4pdL6ZJyu29PIYTOF84fXNU99pu5Wj5OrOwR3PT27Iqw1tAHETyTFSqeiehMlXm5mq8pIjtNZkYhqLfGfVNNTFc14qRa1Udf4eDPzvt3lswT1PxGqAgCuqIUK3uooGhF5ioMAeqvakRzFTqv9JYG8GRPzT0UZVfwr2K+YoaQ31iZ+GiZ0Rd0W7BYm+XYLzWSloFf97eitIFJpEnMtm/ZxjOZrpZIu9bImCFMtZN1OFkuajmrW6FIh7WjIl6LRG5LKzjMv0DB+qjtEzTojrjMFLrPnUZTUa0lFynkMuNGMt4PpCOs0paG7REoduEUxOVuMUFLUQe0lKPzTnGOs7eXHlJB6d+zzuZjUjPJU05o+GgXBWqxiEwiUISoUV+VATEmBJDopMt2pRtaCGagKmd66JWZ0LUiNwwt9WMKo25YsGLELxuuLfPtOeePhuZN+36k5ydc5wTAeoC+8iQBcnOtpHy0ApEUDqdLrhDJPZbjtx+nvEw+ZUJ9jkyf9cY4XVywphnDVAquhJhnrEj2aessXKkqJ8TOt0yTfXZ1tVI64Qsw/3ts=
