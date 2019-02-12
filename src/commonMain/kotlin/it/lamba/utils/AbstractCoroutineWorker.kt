@@ -1,9 +1,8 @@
 package it.lamba.utils
 
 import kotlinx.coroutines.*
-import mu.KotlinLogging
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A worker that [execute] always the same task until [stop]ped. Multiple methods
@@ -14,14 +13,17 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private lateinit var currentJob: Job
 
-    protected fun isActive() = if (::currentJob.isInitialized) currentJob.isActive else false
+    protected fun isActive() = if (::currentJob.isInitialized)
+        currentJob.isActive
+    else
+        false
 
     val status: WorkerStatus
         get() = WorkerStatus(isActive())
 
     data class WorkerStatus(val isActive: Boolean)
 
-    protected val logger = KotlinLogging.logger(this.javaClass.simpleName)
+    //protected val logger = KotlinLogging.logger(this.javaClass.simpleName)
     private var forceNextMaintenance = false
 
     fun triggerMaintenance() {
@@ -31,28 +33,14 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Minimum time between executions of [executeMaintenance].
      */
-    private var timeBetweenMaintenances = 60000L
-    private var timeBetweenExecutions = 1000L
+    var timeBetweenMaintenances = 60000L
+    var timeBetweenExecutions = 1000L
 
     var shouldExecuteMaintenance = false
 
     private var lastMaintenance: Long = 0
     private val lapTime: Long
-        get() = System.currentTimeMillis() - lastMaintenance
-
-    /**
-     * Setter method for [timeBetweenMaintenances].
-     */
-    fun setTimeBetweenMaintenances(time: Long, unit: TimeUnit) {
-        timeBetweenMaintenances = TimeUnit.MILLISECONDS.convert(time, unit)
-    }
-
-    /**
-     * Setter method for [timeBetweenExecutions].
-     */
-    fun setTimeBetweenExecutions(time: Long, unit: TimeUnit) {
-        timeBetweenExecutions = TimeUnit.MILLISECONDS.convert(time, unit)
-    }
+        get() = currentTimeMillis() - lastMaintenance
 
 
     /**
@@ -60,12 +48,14 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * @param await Blocks the current execution until the worker stops.
      */
     fun start(await: Boolean = false) {
-        logger.debug { "Starting..." }
+        if (isActive())
+            return
+//        logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
             onStart()
-            lastMaintenance = System.currentTimeMillis()
+            lastMaintenance = currentTimeMillis()
             while (isActive) {
-                logger.debug { "Starting execution..." }
+//                logger.debug { "Starting execution..." }
                 try {
                     execute()
                     checkMaintenance()
@@ -73,7 +63,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
                 } catch (e: CancellationException) {
                 }
             }
-            logger.debug { "Exiting main cycle" }
+//            logger.debug { "Exiting main cycle" }
             checkMaintenance()
             onPostStop()
         }
@@ -83,23 +73,23 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     }
 
     private suspend fun checkMaintenance() {
-        logger.debug { "Checking if maintenance is needed..." }
-        logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecuteMaintenance = $shouldExecuteMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
+//        logger.debug { "Checking if maintenance is needed..." }
+//        logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecuteMaintenance = $shouldExecuteMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
         if (forceNextMaintenance || (shouldExecuteMaintenance && lapTime >= timeBetweenMaintenances)) {
-            logger.debug { "Maintenance needed. | Executing maintenance..." }
+//            logger.debug { "Maintenance needed. | Executing maintenance..." }
             try {
                 executeMaintenance()
             } catch (e: Throwable) {
-                logger.error(e) { "Maintenance interrupted due to error" }
+//                logger.error(e) { "Maintenance interrupted due to error" }
             }
-            lastMaintenance = System.currentTimeMillis()
+            lastMaintenance = currentTimeMillis()
             forceNextMaintenance = false
-        } else logger.debug { "Maintenance not needed" }
+        } // else logger.debug { "Maintenance not needed" }
     }
 
     /**
      * Called during the maintenance of this worker. This method is called
-     * every [timeBetweenMaintenances] seconds. Use [setTimeBetweenMaintenances]
+     * every [timeBetweenMaintenances] seconds. Use [timeBetweenMaintenances]
      * to modify the interval.
      */
     protected open suspend fun executeMaintenance() {}
@@ -116,7 +106,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     fun stop(wait: Boolean = false) {
         if (isActive()) {
             onStop()
-            logger.debug { "Stopping..." }
+//            logger.debug { "Stopping..." }
             currentJob.cancel()
             if (wait)
                 runBlocking { currentJob.join() }
@@ -125,11 +115,11 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     }
 
     /**
-     * Resets the worker callin [onReset].
+     * Resets the worker calling [onReset].
      * @param wait Blocks the current execution until the worker restarts.
      */
     fun reset(wait: Boolean = false) {
-        logger.debug { "Resetting..." }
+//        logger.debug { "Resetting..." }
         if (!wait)
             GlobalScope.launch {
                 if (isActive)
@@ -150,7 +140,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * @param wait Blocks the current execution until the worker restarts.
      */
     fun restart(wait: Boolean = false) {
-        logger.debug { "Resetting..." }
+//        logger.debug { "Resetting..." }
         if (!wait)
             GlobalScope.launch {
                 stop(true)
@@ -187,3 +177,10 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     protected open fun onPostStop() {}
 }
+
+expect fun currentTimeMillis(): Long
+
+expect fun <T> runBlocking(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.() -> T
+): T

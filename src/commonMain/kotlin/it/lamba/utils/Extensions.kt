@@ -2,7 +2,6 @@ package it.lamba.utils
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 fun Iterable<AbstractCoroutineWorker>.stopAll(wait: Boolean = false) =
     map { GlobalScope.launch { it.stop(wait) } }.takeIf { wait }?.forEach { runBlocking { it.join() } } ?: Unit
