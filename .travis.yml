@@ -15,7 +15,7 @@ matrix:
   - os: osx
     language: generic
     before_install:
-    - brew tap caskroom/versions && brew cask install java8
+    - brew tap AdoptOpenJDK/openjdk && brew cask install adoptopenjdk8
     - chmod +x gradlew
     script: "./gradlew check"
   allow_failures:
