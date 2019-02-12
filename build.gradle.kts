@@ -88,6 +88,9 @@ val sonatypeUsername = System.getenv()["SONATYPEUSERNAME"]
 val sonatypePassword = System.getenv()["SONATYPEPASSWORD"]
 
 if(listOf(keyId, gpgPassword, gpgFile, sonatypeUsername, sonatypePassword).none { it == null }){
+
+    println("Publishing setup detected. Setting up publishing...")
+
     val javadocJar by tasks.creating(Jar::class) {
         archiveClassifier.value("javadoc")
         // TODO: instead of a single empty Javadoc JAR, generate real documentation for each module
