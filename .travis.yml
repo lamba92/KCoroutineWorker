@@ -3,18 +3,18 @@ matrix:
   - os: windows
     language: c
     before_install:
-    - choco install jdk9
+    - choco install jdk11
     - choco install openssl.light
     script: ".\\gradlew check"
   - os: linux
     language: java
-    jdk: oraclejdk9
+    jdk: openjdk11
     before_install:
     - chmod +x gradlew
     script: "./gradlew check"
   - os: osx
     language: java
-    jdk: oraclejdk9
+    jdk: openjdk11
     before_install:
     - chmod +x gradlew
     script: "./gradlew check"
