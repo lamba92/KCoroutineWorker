@@ -85,19 +85,19 @@ val localProp = properties("local.properties")
 
 val keyId = System.getenv()["SIGNING_KEYID"]
     ?: localProp["signing.keyId"] as String?
-    ?: extra["signing.keyId"] as String?
+    ?: extra.getOrNull("signing.keyId") as String?
 val gpgPassword = System.getenv()["SIGNING_PASSWORD"]
     ?: localProp["signing.password"] as String?
-    ?: extra["signing.password"] as String?
+    ?: extra.getOrNull("signing.password") as String?
 val gpgFile = System.getenv()["SIGNING_SECRETRINGFILE"]
     ?: localProp["signing.secretKeyRingFile"] as String?
-    ?: extra["signing.secretKeyRingFile"] as String?
+    ?: extra.getOrNull("signing.secretKeyRingFile") as String?
 val sonatypeUsername = System.getenv()["SONATYPEUSERNAME"]
     ?: localProp["sonatypeUsername"] as String?
-    ?: extra["sonatypeUsername"] as String?
+    ?: extra.getOrNull("sonatypeUsername") as String?
 val sonatypePassword = System.getenv()["SONATYPEPASSWORD"]
     ?: localProp["sonatypePassword"] as String?
-    ?: extra["sonatypePassword"] as String?
+    ?: extra.getOrNull("sonatypePassword") as String?
 
 if (listOf(
         keyId,
@@ -232,3 +232,5 @@ fun customizeForMavenCentral(pom: org.gradle.api.publish.maven.MavenPom) = pom.b
         }
     }
 }
+
+fun ExtraPropertiesExtension.getOrNull(name: String) = if(has(name)) get(name) else null
