@@ -1,11 +1,12 @@
 matrix:
-  include:
+  allow_failures:
   - os: windows
     language: c
     before_install:
     - choco install jdk8
     - choco install openssl.light
     script: ".\\gradlew check"
+  include:
   - os: linux
     language: generic
     before_install:
@@ -39,5 +40,5 @@ env:
 
 before_install:
 - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-  -in secret.gpg.enc -out secret.gpg
+  -in secret.gpg.enc -out   secret.gpg
   -d
