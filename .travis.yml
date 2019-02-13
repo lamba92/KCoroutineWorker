@@ -6,7 +6,7 @@ matrix:
     - choco install jdk11
     - choco install openssl.light
     - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-      -in secret.gpg.enc -out /mnt/d/Users/lamba/OneDrive/Dev/gpg/maven\ central/secret.gpg
+      -in secret.gpg.enc -out secret.gpg
       -d
     script: ".\\gradlew check"
   - os: linux
@@ -15,7 +15,7 @@ matrix:
     before_install:
     - chmod +x gradlew
     - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-      -in secret.gpg.enc -out /mnt/d/Users/lamba/OneDrive/Dev/gpg/maven\ central/secret.gpg
+      -in secret.gpg.enc -out secret.gpg
       -d
     script: "./gradlew check"
   - os: osx
@@ -24,7 +24,7 @@ matrix:
     before_install:
     - chmod +x gradlew
     - openssl aes-256-cbc -K $encrypted_4e33f563f3da_key -iv $encrypted_4e33f563f3da_iv
-      -in secret.gpg.enc -out /mnt/d/Users/lamba/OneDrive/Dev/gpg/maven\ central/secret.gpg
+      -in secret.gpg.enc -out secret.gpg
       -d
     script: "./gradlew check"
   allow_failures:
