@@ -30,17 +30,17 @@ matrix:
   allow_failures:
   - os: windows
 before_cache:
+- |
+  if ([ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]); then
+    echo "Deploying..." && ./gradlew publish
+  fi
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-after_success:
-- |
-  if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    echo "Deploying..." && ./gradlew publish
-  fi
+  - "$HOME/.konan/"
 env:
   global:
   - SIGNING_SECRETRINGFILE=./secret.gpg
