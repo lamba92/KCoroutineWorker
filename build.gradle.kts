@@ -119,8 +119,12 @@ if (listOf(
         archiveClassifier.value("sources")
     }
 
+    signing {
+        
+    }
+
     extra["signing.keyId"] = keyId
-    extra["signing.sonatypePassword"] = gpgPassword
+    extra["signing.password"] = gpgPassword
     extra["signing.secretKeyRingFile"] = gpgFile
 
     publishing {
