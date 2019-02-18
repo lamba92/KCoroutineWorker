@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "com.github.lamba92"
-version = "2.0.0"
+version = System.getenv()["TRAVIS_TAG"] ?: "2.0.0"
 
 repositories {
     mavenCentral()
@@ -92,6 +92,7 @@ val gpgPassword = System.getenv()["SIGNING_PASSWORD"]
 val gpgFile = System.getenv()["SIGNING_SECRETRINGFILE"]
     ?: localProp["signing.secretKeyRingFile"] as String?
     ?: extra.getOrNull("signing.secretKeyRingFile") as String?
+    ?: if(file("./secret.gpg").exists()) file("./secret.gpg").absolutePath else null
 val sonatypeUsername = System.getenv()["SONATYPEUSERNAME"]
     ?: localProp["sonatypeUsername"] as String?
     ?: extra.getOrNull("sonatypeUsername") as String?
@@ -117,10 +118,6 @@ if (listOf(
 
     val sourcesJar by tasks.creating(Jar::class) {
         archiveClassifier.value("sources")
-    }
-
-    signing {
-        
     }
 
     extra["signing.keyId"] = keyId
