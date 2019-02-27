@@ -13,6 +13,7 @@ plugins {
     signing
 }
 
+
 group = "com.github.lamba92"
 version = System.getenv()["TRAVIS_TAG"] ?: "2.0.0"
 
