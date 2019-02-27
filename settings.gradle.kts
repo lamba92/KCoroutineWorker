@@ -1,16 +1,19 @@
 pluginManagement {
-    repositories{
-        gradlePluginPortal()
+    repositories {
         mavenCentral()
-        jcenter()
+        maven(url="https://plugins.gradle.org/m2/")
+        google()
     }
+
     resolutionStrategy {
         eachPlugin {
             when(requested.id.id){
-                "org.jetbrains.dokka" -> useModule("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
+                "kotlin-multiplatform"-> useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+                "com.android.library" -> useModule("com.android.tools.build:gradle:${requested.version}")
             }
         }
     }
 }
 
 rootProject.name = "KCoroutineWorker"
+enableFeaturePreview("GRADLE_METADATA")
