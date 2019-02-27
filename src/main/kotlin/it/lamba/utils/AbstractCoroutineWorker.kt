@@ -28,9 +28,6 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
         forceNextMaintenance = true
     }
 
-    /**
-     * Minimum time between executions of [executeMaintenance].
-     */
     private var timeBetweenMaintenances = 60000L
     private var timeBetweenExecutions = 1000L
 
@@ -60,6 +57,8 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * @param await Blocks the current execution until the worker stops.
      */
     fun start(await: Boolean = false) {
+        if(isActive())
+            return
         logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
             onStart()
@@ -178,12 +177,12 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called as soon as the the worker's job is offloaded into a coroutine. It is executed once.
      */
-    protected open fun onStart() {}
+    protected open suspend fun onStart() {}
 
     /**
      * Called before the worker's job receives the cancellation signal.
      */
     protected open fun onStop() {}
 
-    protected open fun onPostStop() {}
+    protected open suspend fun onPostStop() {}
 }
