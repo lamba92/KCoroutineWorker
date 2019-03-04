@@ -56,7 +56,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Starts the worker.
      * @param await Blocks the current execution until the worker stops.
      */
-    fun start(await: Boolean = false) {
+    suspend fun start(await: Boolean = false) {
         if(isActive())
             return
         logger.debug { "Starting..." }
@@ -77,7 +77,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
             onPostStop()
         }
         if (await) {
-            runBlocking { currentJob.join() }
+            currentJob.join()
         }
     }
 
@@ -112,14 +112,13 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Signals the worker to stop.
      * @param wait Blocks the current execution until the worker stops.
      */
-    fun stop(wait: Boolean = false) {
+    suspend fun stop(wait: Boolean = false) {
         if (isActive()) {
             onStop()
             logger.debug { "Stopping..." }
             currentJob.cancel()
             if (wait)
-                runBlocking { currentJob.join() }
-
+                currentJob.join()
         }
     }
 
@@ -127,12 +126,11 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Resets the worker callin [onReset].
      * @param wait Blocks the current execution until the worker restarts.
      */
-    fun reset(wait: Boolean = false) {
+    suspend fun reset(wait: Boolean = false) {
         logger.debug { "Resetting..." }
         if (!wait)
             GlobalScope.launch {
-                if (isActive)
-                    stop(true)
+                stop(true)
                 onReset()
                 start()
             }
@@ -148,7 +146,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Restart the worker.
      * @param wait Blocks the current execution until the worker restarts.
      */
-    fun restart(wait: Boolean = false) {
+    suspend fun restart(wait: Boolean = false) {
         logger.debug { "Resetting..." }
         if (!wait)
             GlobalScope.launch {
@@ -164,9 +162,9 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Waits until the worker finishes without interrupting it.
      */
-    fun join() {
+    suspend fun join() {
         if (::currentJob.isInitialized)
-            runBlocking { currentJob.join() }
+            currentJob.join()
     }
 
     /**
