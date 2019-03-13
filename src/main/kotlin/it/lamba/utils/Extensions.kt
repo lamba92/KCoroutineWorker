@@ -1,29 +1,27 @@
 package it.lamba.utils
 
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.async
 
-suspend fun Iterable<AbstractCoroutineWorker>.stopAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.stop(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+fun Iterable<AbstractCoroutineWorker>.stopAll() = forEach { it.stop() }
 
-suspend fun Iterable<AbstractCoroutineWorker>.startAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.start(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+suspend fun Iterable<AbstractCoroutineWorker>.stopAndJoinAll()
+        = asyncMap { it.stopAndJoin() }.forEach { it.join() }
 
-suspend fun Iterable<AbstractCoroutineWorker>.resetAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.reset(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+fun Iterable<AbstractCoroutineWorker>.startAll() = forEach { it.start() }
 
-suspend fun Iterable<AbstractCoroutineWorker>.restartAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.restart(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+suspend fun Iterable<AbstractCoroutineWorker>.startAndJoinAll()
+        = asyncMap { it.startAndJoin() }.forEach { it.join() }
 
-suspend fun Array<AbstractCoroutineWorker>.stopAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.stop(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+fun Iterable<AbstractCoroutineWorker>.resetAll() = forEach { it.reset() }
 
-suspend fun Array<AbstractCoroutineWorker>.startAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.start(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+suspend fun Iterable<AbstractCoroutineWorker>.joinAllAndReset()
+        = asyncMap { it.joinAndReset() }.forEach { it.join() }
 
-suspend fun Array<AbstractCoroutineWorker>.resetAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.reset(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+fun Iterable<AbstractCoroutineWorker>.restartAll() = forEach { it.restart() }
 
-suspend fun Array<AbstractCoroutineWorker>.restartAll(wait: Boolean = false) =
-    map { GlobalScope.launch { it.restart(wait) } }.takeIf { wait }?.forEach { it.join() } ?: Unit
+suspend fun Iterable<AbstractCoroutineWorker>.joinAllAndResart()
+        = asyncMap { it.joinAndRestart() }.forEach { it.join() }
+
+fun <T, R> Iterable<T>.asyncMap(func: suspend (T) -> R)
+        = map { GlobalScope.async { func(it) } }

@@ -10,7 +10,10 @@ import kotlin.coroutines.CoroutineContext
  * called during the worker's lifecicle are available for overriding.
  * @param context The coroutine context where to execute the job of the worker
  */
-abstract class AbstractCoroutineWorker(private val context: CoroutineContext = Dispatchers.Default) {
+abstract class AbstractCoroutineWorker(
+    private val context: CoroutineContext = Dispatchers.Default,
+    var shouldExecuteMaintenance: Boolean = false
+) {
 
     private lateinit var currentJob: Job
 
@@ -30,8 +33,6 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
 
     private var timeBetweenMaintenances = 60000L
     private var timeBetweenExecutions = 1000L
-
-    var shouldExecuteMaintenance = false
 
     private var lastMaintenance: Long = 0
     private val lapTime: Long
@@ -56,8 +57,8 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Starts the worker.
      * @param await Blocks the current execution until the worker stops.
      */
-    suspend fun start(await: Boolean = false) {
-        if(isActive())
+    fun start() {
+        if (isActive())
             return
         logger.debug { "Starting..." }
         currentJob = GlobalScope.launch(context) {
@@ -76,9 +77,11 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
             checkMaintenance()
             onPostStop()
         }
-        if (await) {
-            currentJob.join()
-        }
+    }
+
+    suspend fun startAndJoin() {
+        start()
+        join()
     }
 
     private suspend fun checkMaintenance() {
@@ -112,51 +115,55 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
      * Signals the worker to stop.
      * @param wait Blocks the current execution until the worker stops.
      */
-    suspend fun stop(wait: Boolean = false) {
+    fun stop() {
         if (isActive()) {
-            onStop()
-            logger.debug { "Stopping..." }
-            currentJob.cancel()
-            if (wait)
-                currentJob.join()
+            GlobalScope.launch {
+                onStop()
+                logger.debug { "Stopping..." }
+                currentJob.cancel()
+            }
         }
+    }
+
+    suspend fun stopAndJoin() {
+        stop()
+        join()
     }
 
     /**
      * Resets the worker callin [onReset].
      * @param wait Blocks the current execution until the worker restarts.
      */
-    suspend fun reset(wait: Boolean = false) {
-        logger.debug { "Resetting..." }
-        if (!wait)
-            GlobalScope.launch {
-                stop(true)
-                onReset()
-                start()
-            }
-        else {
-            if (isActive())
-                stop(true)
+    fun reset() {
+        GlobalScope.launch {
+            logger.debug { "Restarting..." }
+            stopAndJoin()
             onReset()
             start()
         }
+    }
+
+    suspend fun joinAndReset() {
+        stopAndJoin()
+        onReset()
+        start()
     }
 
     /**
      * Restart the worker.
      * @param wait Blocks the current execution until the worker restarts.
      */
-    suspend fun restart(wait: Boolean = false) {
-        logger.debug { "Resetting..." }
-        if (!wait)
-            GlobalScope.launch {
-                stop(true)
-                start()
-            }
-        else {
-            stop(true)
+    fun restart() {
+        GlobalScope.launch {
+            logger.debug { "Resetting..." }
+            stopAndJoin()
             start()
         }
+    }
+
+    suspend fun joinAndRestart() {
+        stopAndJoin()
+        start()
     }
 
     /**
@@ -170,7 +177,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called when restarting the worker in [reset].
      */
-    protected open fun onReset() {}
+    protected open suspend fun onReset() {}
 
     /**
      * Called as soon as the the worker's job is offloaded into a coroutine. It is executed once.
@@ -180,7 +187,7 @@ abstract class AbstractCoroutineWorker(private val context: CoroutineContext = D
     /**
      * Called before the worker's job receives the cancellation signal.
      */
-    protected open fun onStop() {}
+    protected open suspend fun onStop() {}
 
     protected open suspend fun onPostStop() {}
 }
