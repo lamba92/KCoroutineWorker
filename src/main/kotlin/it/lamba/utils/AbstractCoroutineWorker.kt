@@ -12,7 +12,9 @@ import kotlin.coroutines.CoroutineContext
  */
 abstract class AbstractCoroutineWorker(
     private val context: CoroutineContext = Dispatchers.Default,
-    var shouldExecuteMaintenance: Boolean = false
+    var shouldExecuteMaintenance: Boolean = false,
+    var stopOnError: Boolean = false,
+    var executeMaintenanceOnStop: Boolean = true
 ) {
 
     private lateinit var currentJob: Job
@@ -67,14 +69,23 @@ abstract class AbstractCoroutineWorker(
             while (isActive) {
                 logger.debug { "Starting execution..." }
                 try {
-                    execute()
-                    checkMaintenance()
+                    withContext(NonCancellable) {
+                        execute()
+                        checkMaintenance()
+                    }
                     delay(timeBetweenExecutions)
                 } catch (e: CancellationException) {
+                    logger.info { "Worker interrupted" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Worker execution encountered and error" }
+                    if (stopOnError)
+                        break
                 }
             }
             logger.debug { "Exiting main cycle" }
-            checkMaintenance()
+            if (executeMaintenanceOnStop) withContext(NonCancellable) {
+                executeMaintenance()
+            }
             onPostStop()
         }
     }
@@ -89,11 +100,7 @@ abstract class AbstractCoroutineWorker(
         logger.debug { "forceNextMaintenance = $forceNextMaintenance | shouldExecuteMaintenance = $shouldExecuteMaintenance | lapTime >= timeBetweenMaintenances = ${lapTime >= timeBetweenMaintenances}" }
         if (forceNextMaintenance || (shouldExecuteMaintenance && lapTime >= timeBetweenMaintenances)) {
             logger.debug { "Maintenance needed. | Executing maintenance..." }
-            try {
-                executeMaintenance()
-            } catch (e: Throwable) {
-                logger.error(e) { "Maintenance interrupted due to error" }
-            }
+            executeMaintenance()
             lastMaintenance = System.currentTimeMillis()
             forceNextMaintenance = false
         } else logger.debug { "Maintenance not needed" }
